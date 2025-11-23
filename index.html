@@ -61,3 +61,47 @@
 
 </body>
 </html>
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Driver GPS Sender</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+  <h2>Select Your Bus</h2>
+
+  <button class="driver-btn" onclick="startGPS('bus1')">BUS 1 - 5999</button>
+  <button class="driver-btn" onclick="startGPS('bus2')">BUS 2 - 8888</button>
+
+  <p id="status"></p>
+
+  <!-- FIREBASE -->
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+
+  <script>
+    const firebaseConfig = {
+      apiKey: "YOUR_KEY",
+      databaseURL: "https://your-app.firebaseio.com"
+    };
+
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+
+    function startGPS(busId) {
+      document.getElementById("status").innerHTML =
+        `Sending GPS for <b>${busId.toUpperCase()}</b>...`;
+
+      navigator.geolocation.watchPosition(pos => {
+        const lat = pos.coords.latitude;
+        const lng = pos.coords.longitude;
+
+        db.ref(busId).set({ lat, lng });
+      });
+    }
+  </script>
+
+</body>
+</html>
