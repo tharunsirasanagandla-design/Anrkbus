@@ -1,41 +1,63 @@
-let map;
-let marker;
+// ----------------------------
+//  FIREBASE CONFIG
+// ----------------------------
+const firebaseConfig = {
+  apiKey: "YOUR_FIREBASE_KEY",
+  databaseURL: "https://your-app.firebaseio.com"
+};
 
-function initMap() {
-  map = new google.maps.Map(document.getElementById("map"), {
-    zoom: 15,
-    center: { lat: 17.2000, lng: 79.6000 }
-  });
+firebase.initializeApp(firebaseConfig);
+const db = firebase.database();
 
-  marker = new google.maps.Marker({
-    position: { lat: 17.2000, lng: 79.6000 },
-    map: map,
-    title: "Bus Location"
-  });
+let map, marker;
+let selectedBus = "";
 
-  // Call function every 2 seconds
-  setInterval(updateBusLocation, 2000);
-}
 
-function updateBusLocation() {
-  // You must update these values from API or database
-  let newLat = window.currentLat;
-  let newLng = window.currentLng;
+// ----------------------------
+//  CHECK BUS CODE
+// ----------------------------
+function checkCode() {
+  const code = document.getElementById("busCode").value;
 
-  // Update only if changed
-  if (marker.position.lat() !== newLat || marker.position.lng() !== newLng) {
-    marker.setPosition({ lat: newLat, lng: newLng });
-    map.setCenter({ lat: newLat, lng: newLng });
+  // ⭐ Bus 1 code
+  if (code == "5999") {
+    selectedBus = "bus1";
+    startMap();
+  } 
+  // ⭐ Bus 2 code
+  else if (code == "8888") {
+    selectedBus = "bus2";
+    startMap();
+  }
+  else {
+    alert("Invalid Code");
   }
 }
 
-// TEMP movement simulation (remove when connecting real GPS)
-window.currentLat = 17.2000;
-window.currentLng = 79.6000;
 
-setInterval(() => {
-  window.currentLat += 0.0005;
-  window.currentLng += 0.0005;
-}, 2000);
+// ----------------------------
+//  START MAP & LIVE TRACKING
+// ----------------------------
+function startMap() {
+  document.getElementById("code-screen").style.display = "none";
+  document.getElementById("map").style.display = "block";
 
-window.onload = initMap;
+  map = new google.maps.Map(document.getElementById("map"), {
+    zoom: 15,
+    center: { lat: 17.2, lng: 79.6 }
+  });
+
+  marker = new google.maps.Marker({
+    map: map,
+    label: selectedBus === "bus1" ? "1" : "2"
+  });
+
+  // ⭐ Listen to selected bus location
+  db.ref(selectedBus).on("value", snapshot => {
+    const d = snapshot.val();
+    if (!d) return;
+
+    marker.setPosition({ lat: d.lat, lng: d.lng });
+    map.setCenter({ lat: d.lat, lng: d.lng });
+  });
+}
