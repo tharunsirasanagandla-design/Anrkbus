@@ -5,25 +5,12 @@ document.addEventListener("DOMContentLoaded", function () {
         maxZoom: 19
     }).addTo(map);
 
-    // BUS ICON
+    // FORCED BUS ICON ONLY 🚍
     var busIcon = L.divIcon({
-        html: "🚌",  
+        html: "🚌",     // <<< ONLY BUS ICON
         className: "bus-icon",
-        iconSize: [40, 40],
-        iconAnchor: [20, 20]
+        iconSize: [50, 50],
+        iconAnchor: [25, 25]
     });
 
-    var marker = L.marker([17.1466, 79.6221], { icon: busIcon }).addTo(map);
-
-    function updateLocation() {
-        fetch('location.json')
-            .then(response => response.json())
-            .then(data => {
-                marker.setLatLng([data.latitude, data.longitude]);
-                map.setView([data.latitude, data.longitude], 13);
-            });
-    }
-
-    updateLocation();
-    setInterval(updateLocation, 5000);
-});
+    var
