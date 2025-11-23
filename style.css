@@ -22,3 +22,8 @@ header {
     height: calc(100vh - 90px); /* Perfect height */
     background: #ddd;
 }
+#map {
+    height: calc(100vh - 120px); /* Adjust if your header is bigger */
+    width: 100%;
+    background: #eee;
+}
