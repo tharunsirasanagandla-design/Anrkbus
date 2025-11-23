@@ -5,13 +5,29 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>College Bus Live Tracking</title>
 
-    <!-- CSS -->
-    <link rel="stylesheet" href="style.css">
+    <!-- Map CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
 
-    <!-- Leaflet Map CSS -->
-    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+    <style>
+        /* Map must have height */
+        #map {
+            height: 500px;
+            width: 100%;
+        }
+
+        body {
+            margin: 0;
+            font-family: Arial;
+        }
+
+        header {
+            background: #007bff;
+            color: white;
+            padding: 15px;
+            text-align: center;
+        }
+    </style>
 </head>
-
 <body>
 
     <header>
@@ -21,8 +37,8 @@
     <!-- Map Container -->
     <div id="map"></div>
 
-    <!-- Leaflet Map JS -->
-    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+    <!-- Leaflet JS -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
     <!-- Custom JS -->
     <script src="script.js"></script>
