@@ -1,34 +1,29 @@
-// Default Bus Location (Miryalguda)
-let busLatitude = 17.2475;  
-let busLongitude = 79.6267;
-
-// Create Map
-var map = L.map('map').setView([busLatitude, busLongitude], 14);
-
-// Add Map Layer
-L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-    maxZoom: 19
-}).addTo(map);
-
-// Add Bus Marker on Map
+// Set bus icon
 var busIcon = L.icon({
-    iconUrl: 'https://cdn-icons-png.flaticon.com/512/61/61212.png',
-    iconSize: [45, 45],
+    iconUrl: 'https://cdn-icons-png.flaticon.com/512/61/61212.png', 
+    iconSize: [40, 40],
+    iconAnchor: [20, 20]
 });
 
-var marker = L.marker([busLatitude, busLongitude], { icon: busIcon }).addTo(map);
+// Create map
+var map = L.map('map').setView([16.5925, 79.0075], 11);
 
-// Update Bus Location Function
-function updateBusLocation(lat, lng) {
-    marker.setLatLng([lat, lng]);
-    map.setView([lat, lng]);
+// Load & display tile layer
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    maxZoom: 19,
+}).addTo(map);
+
+// Add marker (bus)
+var marker = L.marker([16.5925, 79.0075], { icon: busIcon }).addTo(map);
+
+// Update location (static example)
+function updateLocation() {
+    var newLat = 16.5925 + (Math.random() - 0.5) * 0.01;
+    var newLng = 79.0075 + (Math.random() - 0.5) * 0.01;
+
+    marker.setLatLng([newLat, newLng]);
+    map.setView([newLat, newLng]);
 }
 
-// (Optional) Test Auto Move Every 5 Seconds
-// REMOVE this later if using Firebase GPS data
-setInterval(() => {
-    busLatitude += (Math.random() - 0.5) * 0.002;
-    busLongitude += (Math.random() - 0.5) * 0.002;
-
-    updateBusLocation(busLatitude, busLongitude);
-}, 5000);
+// Update every 5 seconds
+setInterval(updateLocation, 5000);
