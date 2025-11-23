@@ -1,107 +1,43 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Driver GPS Sender</title>
-  <style>
-    body {
-      font-family: Arial;
-      text-align: center;
-      padding-top: 50px;
-    }
-
-    button {
-      padding: 15px 40px;
-      font-size: 20px;
-      margin: 20px;
-      cursor: pointer;
-    }
-
-    #status {
-      margin-top: 30px;
-      font-size: 20px;
-      color: green;
-    }
-  </style>
-</head>
-<body>
-
-  <h1>Select Your Bus</h1>
-
-  <button onclick="startGPS('bus1')">BUS 1 - 5999</button>
-  <button onclick="startGPS('bus2')">BUS 2 - 8888</button>
-
-  <div id="status"></div>
-
-  <!-- Firebase -->
-  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
-
-  <script>
-    // Firebase Setup
-    firebase.initializeApp({
-      apiKey: "YOUR_FIREBASE_KEY",
-      databaseURL: "https://your-app.firebaseio.com"
-    });
-
-    const db = firebase.database();
-
-
-    function startGPS(busName) {
-      document.getElementById("status").innerHTML = 
-        "Sending GPS for <b>" + busName.toUpperCase() + "</b>...";
-
-      navigator.geolocation.watchPosition(pos => {
-        db.ref(busName).set({
-          lat: pos.coords.latitude,
-          lng: pos.coords.longitude
-        });
-      });
-    }
-  </script>
-
-</body>
-</html>
-<!DOCTYPE html>
-<html>
-<head>
-  <title>Driver GPS Sender</title>
+  <title>Bus Live Tracking</title>
   <link rel="stylesheet" href="style.css">
 </head>
 
 <body>
 
-  <h2>Select Your Bus</h2>
+  <!-- HEADER -->
+  <div id="topBar">ANRK BUS TRACKING</div>
 
-  <button class="driver-btn" onclick="startGPS('bus1')">BUS 1 - 5999</button>
-  <button class="driver-btn" onclick="startGPS('bus2')">BUS 2 - 8888</button>
+  <!-- BUS OPTIONS -->
+  <div id="busOptions">
+    <button onclick="openCodeBox('bus1')">BUS 1</button>
+    <button onclick="openCodeBox('bus2')">BUS 2</button>
+    <button onclick="openCodeBox('bus3')">BUS 3</button>
+  </div>
 
-  <p id="status"></p>
+  <!-- CODE ENTRY POPUP -->
+  <div id="codePopup">
+    <div id="popupBox">
+      <h3>Enter Code</h3>
+      <input id="codeInput" maxlength="4" placeholder="5999">
+      <button onclick="verifyCode()">Submit</button>
+      <button id="closeBtn" onclick="closePopup()">Close</button>
+    </div>
+  </div>
+
+  <!-- MAP -->
+  <div id="map"></div>
+
+  <!-- GOOGLE MAPS -->
+  <script src="https://maps.googleapis.com/maps/api/js?key=YOUR_MAPS_KEY"></script>
 
   <!-- FIREBASE -->
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
 
-  <script>
-    const firebaseConfig = {
-      apiKey: "YOUR_KEY",
-      databaseURL: "https://your-app.firebaseio.com"
-    };
-
-    firebase.initializeApp(firebaseConfig);
-    const db = firebase.database();
-
-    function startGPS(busId) {
-      document.getElementById("status").innerHTML =
-        `Sending GPS for <b>${busId.toUpperCase()}</b>...`;
-
-      navigator.geolocation.watchPosition(pos => {
-        const lat = pos.coords.latitude;
-        const lng = pos.coords.longitude;
-
-        db.ref(busId).set({ lat, lng });
-      });
-    }
-  </script>
+  <script src="script.js"></script>
 
 </body>
 </html>
