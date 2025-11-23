@@ -1,63 +1,69 @@
-// ----------------------------
-//  FIREBASE CONFIG
-// ----------------------------
+// ------------------ FIREBASE ------------------
 const firebaseConfig = {
   apiKey: "YOUR_FIREBASE_KEY",
-  databaseURL: "https://your-app.firebaseio.com"
+  databaseURL: "https://your.firebaseio.com"
 };
 
 firebase.initializeApp(firebaseConfig);
 const db = firebase.database();
 
+// ------------------ VARIABLES ------------------
 let map, marker;
 let selectedBus = "";
+const correctCode = "5999";
 
-
-// ----------------------------
-//  CHECK BUS CODE
-// ----------------------------
-function checkCode() {
-  const code = document.getElementById("busCode").value;
-
-  // ⭐ Bus 1 code
-  if (code == "5999") {
-    selectedBus = "bus1";
-    startMap();
-  } 
-  // ⭐ Bus 2 code
-  else if (code == "8888") {
-    selectedBus = "bus2";
-    startMap();
-  }
-  else {
-    alert("Invalid Code");
-  }
-}
-
-
-// ----------------------------
-//  START MAP & LIVE TRACKING
-// ----------------------------
-function startMap() {
-  document.getElementById("code-screen").style.display = "none";
-  document.getElementById("map").style.display = "block";
-
+// ------------------ MAP INIT ------------------
+function initMap() {
   map = new google.maps.Map(document.getElementById("map"), {
     zoom: 15,
     center: { lat: 17.2, lng: 79.6 }
   });
+}
 
-  marker = new google.maps.Marker({
-    map: map,
-    label: selectedBus === "bus1" ? "1" : "2"
-  });
+initMap();
 
-  // ⭐ Listen to selected bus location
-  db.ref(selectedBus).on("value", snapshot => {
-    const d = snapshot.val();
+// ------------------ POPUP OPEN ------------------
+function openCodeBox(bus) {
+  selectedBus = bus;
+  document.getElementById("codePopup").style.display = "flex";
+}
+
+// ------------------ POPUP CLOSE ------------------
+function closePopup() {
+  document.getElementById("codePopup").style.display = "none";
+}
+
+// ------------------ VERIFY CODE ------------------
+function verifyCode() {
+  const entered = document.getElementById("codeInput").value;
+
+  if (entered !== correctCode) {
+    alert("Wrong Code!");
+    return;
+  }
+
+  closePopup();
+  startTracking(selectedBus);
+}
+
+// ------------------ REAL-TIME TRACKING ------------------
+function startTracking(bus) {
+  db.ref(bus).on("value", snap => {
+    const d = snap.val();
     if (!d) return;
 
-    marker.setPosition({ lat: d.lat, lng: d.lng });
-    map.setCenter({ lat: d.lat, lng: d.lng });
+    const pos = { lat: d.lat, lng: d.lng };
+
+    if (!marker) {
+      marker = new google.maps.Marker({
+        map: map,
+        position: pos,
+        icon: "https://cdn-icons-png.flaticon.com/512/61/61290.png"
+      });
+    } else {
+      marker.setPosition(pos);
+    }
+
+    map.setCenter(pos);
   });
 }
