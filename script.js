@@ -1,46 +1,53 @@
-// API from where bus sends location continuously
-const API_URL = "https://your-api.com/bus-location.json";
+document.addEventListener("DOMContentLoaded", function () {
 
-// Initialize map
-const map = L.map('map').setView([17.123, 79.654], 13);
+    // Starting point
+    let lat = 16.8730;
+    let lng = 79.5715;
 
-// Tile layer
-L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-    maxZoom: 19
-}).addTo(map);
+    // Map setup
+    const map = L.map('map').setView([lat, lng], 14);
 
-// Bus icon
-const busIcon = L.icon({
-    iconUrl: "https://cdn-icons-png.flaticon.com/512/61/61282.png",
-    iconSize: [40, 40],
-});
+    // Tile layer (premium HOT theme)
+    L.tileLayer('https://{s}.tile.openstreetmap.fr/hot/{z}/{x}/{y}.png', {
+        maxZoom: 19
+    }).addTo(map);
 
-// Initial marker
-let busMarker = L.marker([17.123, 79.654], { icon: busIcon }).addTo(map);
+    // Bus icon
+    const busIcon = L.divIcon({
+        html: "🚌",
+        className: "bus-icon",
+        iconSize: [40, 40],
+        iconAnchor: [20, 20]
+    });
 
-// Function to fetch LIVE location
-async function updateBusLocation() {
-    try {
-        const response = await fetch(API_URL);
-        const data = await response.json();
+    // Marker
+    let marker = L.marker([lat, lng], { icon: busIcon }).addTo(map);
 
-        const lat = data.latitude;
-        const lng = data.longitude;
+    // Smooth movement function
+    function moveBus() {
+        let newLat = lat + (Math.random() - 0.5) * 0.003;
+        let newLng = lng + (Math.random() - 0.5) * 0.003;
 
-        // Update marker position
-        busMarker.setLatLng([lat, lng]);
+        let steps = 60;
+        let stepLat = (newLat - lat) / steps;
+        let stepLng = (newLng - lng) / steps;
+        let count = 0;
 
-        // Smooth center follow
-        map.setView([lat, lng], map.getZoom());
-    } 
-    catch (err) {
-        console.log("Error fetching live location:", err);
+        let interval = setInterval(() => {
+            lat += stepLat;
+            lng += stepLng;
+            marker.setLatLng([lat, lng]);
+
+            if (count === 0) {
+                map.panTo([lat, lng], { animate: true, duration: 1 });
+            }
+
+            count++;
+            if (count >= steps) clearInterval(interval);
+        }, 30);
     }
-}
 
-// Update every 5 seconds
-setInterval(updateBusLocation, 5000);
+    // Move every 3 sec
+    setInterval(moveBus, 3000);
 
-// First update
-updateBusLocation();
-var map = L.map('map').setView([17.169, 79.632], 13);
+});
