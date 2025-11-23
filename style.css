@@ -1,39 +1,46 @@
-/* Reset basic styles */
-body {
+/* Reset */
+* {
     margin: 0;
     padding: 0;
-    font-family: Arial, sans-serif;
-    background: #f5f5f5;
+    box-sizing: border-box;
 }
 
-/* Header styling */
+body {
+    font-family: 'Segoe UI', Arial, sans-serif;
+    background: #f2f4f7;
+}
+
+/* Header */
 header {
-    background-color: #1a73e8;
+    background: linear-gradient(90deg, #0066ff, #00a2ff);
+    padding: 20px;
     color: white;
     text-align: center;
-    padding: 18px 0;
-    font-size: 24px;
+    font-size: 28px;
     font-weight: bold;
-    letter-spacing: 1px;
-    box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+    box-shadow: 0px 4px 10px rgba(0,0,0,0.2);
 }
 
-/* Map area covers full remaining screen */
+/* Map Box Container */
 #map {
+    height: 550px;
     width: 100%;
-    height: calc(100vh - 80px);
-    border-top: 2px solid #1a73e8;
+    margin-top: 15px;
+    border-radius: 10px;
+    box-shadow: 0px 3px 12px rgba(0,0,0,0.15);
+    overflow: hidden;
 }
 
-/* Just in case any extra container is added */
-.container {
-    padding: 10px;
+/* Bus icon size */
+.bus-icon {
+    font-size: 40px;
+    text-shadow: 0px 0px 5px rgba(0,0,0,0.4);
 }
 
-/* Mobile–friendly adjustments */
-@media (max-width: 600px) {
-    header {
-        font-size: 20px;
-        padding: 15px 0;
-    }
+/* Footer (optional) */
+footer {
+    text-align: center;
+    padding: 15px;
+    color: #666;
+    margin-top: 20px;
 }
