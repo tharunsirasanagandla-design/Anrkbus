@@ -1,16 +1,22 @@
 document.addEventListener("DOMContentLoaded", function () {
-    var map = L.map('map').setView([17.1466, 79.6221], 10);
 
+    // Default view (Miryalguda)
+    var map = L.map('map').setView([16.8730, 79.5715], 13);
+
+    // Load map tiles
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
         maxZoom: 19
     }).addTo(map);
 
-    // FORCED BUS ICON ONLY 🚍
+    // Bus Icon
     var busIcon = L.divIcon({
-        html: "🚌",     // <<< ONLY BUS ICON
+        html: "🚌",
         className: "bus-icon",
-        iconSize: [50, 50],
-        iconAnchor: [25, 25]
+        iconSize: [40, 40],
+        iconAnchor: [20, 20]
     });
 
-    var
+    // Bus Marker
+    var busMarker = L.marker([16.8730, 79.5715], { icon: busIcon }).addTo(map);
+
+});
