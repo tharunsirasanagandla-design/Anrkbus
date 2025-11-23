@@ -1,16 +1,34 @@
-function initMap() {
+// Default Bus Location (Miryalguda)
+let busLatitude = 17.2475;  
+let busLongitude = 79.6267;
 
-    // Example bus location - replace with your bus lat & long
-    var busLocation = { lat: 17.2253, lng: 79.5941 };
+// Create Map
+var map = L.map('map').setView([busLatitude, busLongitude], 14);
 
-    var map = new google.maps.Map(document.getElementById("map"), {
-        zoom: 13,
-        center: busLocation
-    });
+// Add Map Layer
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    maxZoom: 19
+}).addTo(map);
 
-    var marker = new google.maps.Marker({
-        position: busLocation,
-        map: map,
-        title: "College Bus"
-    });
+// Add Bus Marker on Map
+var busIcon = L.icon({
+    iconUrl: 'https://cdn-icons-png.flaticon.com/512/61/61212.png',
+    iconSize: [45, 45],
+});
+
+var marker = L.marker([busLatitude, busLongitude], { icon: busIcon }).addTo(map);
+
+// Update Bus Location Function
+function updateBusLocation(lat, lng) {
+    marker.setLatLng([lat, lng]);
+    map.setView([lat, lng]);
 }
+
+// (Optional) Test Auto Move Every 5 Seconds
+// REMOVE this later if using Firebase GPS data
+setInterval(() => {
+    busLatitude += (Math.random() - 0.5) * 0.002;
+    busLongitude += (Math.random() - 0.5) * 0.002;
+
+    updateBusLocation(busLatitude, busLongitude);
+}, 5000);
