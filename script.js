@@ -43,3 +43,4 @@ setInterval(updateBusLocation, 5000);
 
 // First update
 updateBusLocation();
+var map = L.map('map').setView([17.169, 79.632], 13);
