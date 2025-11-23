@@ -1,26 +1,63 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>College Bus Live Tracking</title>
+  <title>Driver GPS Sender</title>
+  <style>
+    body {
+      font-family: Arial;
+      text-align: center;
+      padding-top: 50px;
+    }
 
-    <!-- Leaflet CSS -->
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+    button {
+      padding: 15px 40px;
+      font-size: 20px;
+      margin: 20px;
+      cursor: pointer;
+    }
 
-    <!-- Custom CSS -->
-    <link rel="stylesheet" href="style.css">
+    #status {
+      margin-top: 30px;
+      font-size: 20px;
+      color: green;
+    }
+  </style>
 </head>
-
 <body>
 
-    <header>College Bus Live Location</header>
+  <h1>Select Your Bus</h1>
 
-    <div id="map"></div>
+  <button onclick="startGPS('bus1')">BUS 1 - 5999</button>
+  <button onclick="startGPS('bus2')">BUS 2 - 8888</button>
 
-    <!-- Leaflet JS -->
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-    <script src="script.js"></script>
+  <div id="status"></div>
+
+  <!-- Firebase -->
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+
+  <script>
+    // Firebase Setup
+    firebase.initializeApp({
+      apiKey: "YOUR_FIREBASE_KEY",
+      databaseURL: "https://your-app.firebaseio.com"
+    });
+
+    const db = firebase.database();
+
+
+    function startGPS(busName) {
+      document.getElementById("status").innerHTML = 
+        "Sending GPS for <b>" + busName.toUpperCase() + "</b>...";
+
+      navigator.geolocation.watchPosition(pos => {
+        db.ref(busName).set({
+          lat: pos.coords.latitude,
+          lng: pos.coords.longitude
+        });
+      });
+    }
+  </script>
 
 </body>
 </html>
