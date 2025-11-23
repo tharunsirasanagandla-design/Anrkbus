@@ -1,54 +1,45 @@
-document.addEventListener("DOMContentLoaded", function () {
+// API from where bus sends location continuously
+const API_URL = "https://your-api.com/bus-location.json";
 
-    // Default location (Miryalguda)
-    let lat = 16.8730;
-    let lng = 79.5715;
+// Initialize map
+const map = L.map('map').setView([17.123, 79.654], 13);
 
-    // Create map
-    var map = L.map('map', {
-        zoomControl: false,           // premium look
-        scrollWheelZoom: true,
-        smoothWheelZoom: true
-    }).setView([lat, lng], 14);
+// Tile layer
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    maxZoom: 19
+}).addTo(map);
 
-    // Add modern tile style
-    L.tileLayer('https://{s}.tile.openstreetmap.fr/hot/{z}/{x}/{y}.png', {
-        maxZoom: 19
-    }).addTo(map);
+// Bus icon
+const busIcon = L.icon({
+    iconUrl: "https://cdn-icons-png.flaticon.com/512/61/61282.png",
+    iconSize: [40, 40],
+});
 
-    // Custom Bus Icon
-    var busIcon = L.divIcon({
-        html: "<div class='bus-emoji'>🚌</div>",
-        className: "bus-icon",
-        iconSize: [50, 50],
-        iconAnchor: [25, 25]
-    });
+// Initial marker
+let busMarker = L.marker([17.123, 79.654], { icon: busIcon }).addTo(map);
 
-    // Add marker
-    var busMarker = L.marker([lat, lng], { icon: busIcon }).addTo(map);
+// Function to fetch LIVE location
+async function updateBusLocation() {
+    try {
+        const response = await fetch(API_URL);
+        const data = await response.json();
 
-    // Smooth animation function
-    function moveBus(newLat, newLng) {
-        let duration = 1000; // 1 sec animation
-        let steps = 60;
-        let latStep = (newLat - lat) / steps;
-        let lngStep = (newLng - lng) / steps;
-        let count = 0;
+        const lat = data.latitude;
+        const lng = data.longitude;
 
-        let animate = setInterval(() => {
-            lat += latStep;
-            lng += lngStep;
-            busMarker.setLatLng([lat, lng]);
-            
-            if (count === 0) {
-                map.panTo([lat, lng], { animate: true, duration: 1 });
-            }
+        // Update marker position
+        busMarker.setLatLng([lat, lng]);
 
-            count++;
-            if (count >= steps) {
-                clearInterval(animate);
-            }
-        }, duration / steps);
+        // Smooth center follow
+        map.setView([lat, lng], map.getZoom());
+    } 
+    catch (err) {
+        console.log("Error fetching live location:", err);
     }
+}
 
-    // Dummy Movement Every 3 Seconds (For
+// Update every 5 seconds
+setInterval(updateBusLocation, 5000);
+
+// First update
+updateBusLocation();
