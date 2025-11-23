@@ -1,43 +1,254 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Bus Live Tracking</title>
-  <link rel="stylesheet" href="style.css">
-</head>
+    <title>Bus Live Tracking (Student + Driver)</title>
+    <style>
+        body { margin: 0; background: #f2f2f2; font-family: Arial; }
 
+        header {
+            background: #0066ff;
+            color: white;
+            padding: 15px;
+            font-size: 24px;
+            text-align: center;
+        }
+
+        nav {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            padding: 10px;
+            background: #e8e8e8;
+        }
+
+        nav button {
+            padding: 10px 20px;
+            border: none;
+            background: #0066ff;
+            color: white;
+            border-radius: 6px;
+            font-size: 16px;
+        }
+
+        /* Student Section */
+        #studentPage, #driverPage {
+            display: none;
+        }
+
+        #busButtons {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            padding: 10px;
+        }
+
+        #busButtons button {
+            padding: 10px 20px;
+            background: #0066ff;
+            color: white;
+            border-radius: 6px;
+            border: none;
+            font-size: 16px;
+        }
+
+        #map {
+            width: 100%;
+            height: calc(100vh - 200px);
+            background: #ccc;
+        }
+
+        #popup {
+            position: fixed;
+            top: 30%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            width: 260px;
+            text-align: center;
+            display: none;
+            box-shadow: 0px 0px 10px rgba(0,0,0,0.3);
+        }
+
+        #popup input {
+            width: 90%;
+            padding: 10px;
+            margin-top: 10px;
+            border: 1px solid #aaa;
+            border-radius: 6px;
+        }
+
+        #popup button {
+            margin-top: 15px;
+            width: 100%;
+        }
+
+        /* Driver Section */
+        #driverPage {
+            padding: 20px;
+        }
+
+        select, button {
+            padding: 15px;
+            font-size: 18px;
+            width: 100%;
+            margin-top: 20px;
+        }
+    </style>
+</head>
 <body>
 
-  <!-- HEADER -->
-  <div id="topBar">ANRK BUS TRACKING</div>
+<header>🚌 ANRK BUS LIVE TRACKING</header>
 
-  <!-- BUS OPTIONS -->
-  <div id="busOptions">
-    <button onclick="openCodeBox('bus1')">BUS 1</button>
-    <button onclick="openCodeBox('bus2')">BUS 2</button>
-    <button onclick="openCodeBox('bus3')">BUS 3</button>
-  </div>
+<nav>
+    <button onclick="showPage('student')">Student</button>
+    <button onclick="showPage('driver')">Driver</button>
+</nav>
 
-  <!-- CODE ENTRY POPUP -->
-  <div id="codePopup">
-    <div id="popupBox">
-      <h3>Enter Code</h3>
-      <input id="codeInput" maxlength="4" placeholder="5999">
-      <button onclick="verifyCode()">Submit</button>
-      <button id="closeBtn" onclick="closePopup()">Close</button>
+<!---------------------- STUDENT PAGE ----------------------->
+<div id="studentPage">
+    <div id="busButtons">
+        <button onclick="selectBus('bus1')">Bus 1</button>
+        <button onclick="selectBus('bus2')">Bus 2</button>
+        <button onclick="selectBus('bus3')">Bus 3</button>
     </div>
-  </div>
 
-  <!-- MAP -->
-  <div id="map"></div>
+    <div id="map"></div>
 
-  <!-- GOOGLE MAPS -->
-  <script src="https://maps.googleapis.com/maps/api/js?key=YOUR_MAPS_KEY"></script>
+    <div id="popup">
+        <h3>Enter Code</h3>
+        <input type="number" id="codeInput" placeholder="Enter 5999">
+        <button onclick="verifyCode()">OK</button>
+    </div>
+</div>
 
-  <!-- FIREBASE -->
-  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+<!---------------------- DRIVER PAGE ----------------------->
+<div id="driverPage">
+    <h2>Driver GPS Control</h2>
 
-  <script src="script.js"></script>
+    <select id="busSelect">
+        <option value="bus1">Bus 1</option>
+        <option value="bus2">Bus 2</option>
+        <option value="bus3">Bus 3</option>
+    </select>
+
+    <button onclick="startGPS()">GPS ON</button>
+    <button onclick="stopGPS()">GPS OFF</button>
+</div>
+
+<!---------------------- SCRIPTS ----------------------->
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+
+<script>
+/* ---------------- FIREBASE CONFIG ---------------- */
+
+const firebaseConfig = {
+    apiKey: "YOUR_API_KEY",
+    authDomain: "YOUR_AUTH_DOMAIN",
+    databaseURL: "YOUR_DB",
+    projectId: "YOUR_PID",
+    storageBucket: "YOUR_SB",
+    messagingSenderId: "YOUR_MSG",
+    appId: "YOUR_APPID"
+};
+
+firebase.initializeApp(firebaseConfig);
+const db = firebase.database();
+
+/* ---------------- PAGE SWITCH ---------------- */
+
+function showPage(page) {
+    document.getElementById("studentPage").style.display = "none";
+    document.getElementById("driverPage").style.display = "none";
+
+    if (page === "student") document.getElementById("studentPage").style.display = "block";
+    else document.getElementById("driverPage").style.display = "block";
+}
+
+showPage("student");
+
+/* ---------------- STUDENT PAGE ---------------- */
+
+let map;
+let marker = null;
+let selectedBus = "";
+let live = false;
+
+function initMap() {
+    map = new google.maps.Map(document.getElementById("map"), {
+        center: { lat: 17.387, lng: 78.487 },
+        zoom: 14
+    });
+}
+
+function selectBus(bus) {
+    selectedBus = bus;
+    document.getElementById("popup").style.display = "block";
+}
+
+function verifyCode() {
+    let code = document.getElementById("codeInput").value;
+
+    live = (code === "5999");
+
+    alert(live ? "Correct Code — LIVE tracking ON" : "Wrong Code — Static Tracking");
+
+    document.getElementById("popup").style.display = "none";
+
+    startTracking(selectedBus);
+}
+
+function startTracking(bus) {
+    db.ref(bus).on("value", snap => {
+        let d = snap.val();
+        if (!d) return;
+
+        let pos = { lat: d.lat, lng: d.lng };
+
+        if (!marker) {
+            marker = new google.maps.Marker({
+                position: pos,
+                map: map,
+                icon: "https://cdn-icons-png.flaticon.com/512/61/61290.png"
+            });
+        } else {
+            marker.setPosition(pos);
+        }
+
+        map.setCenter(pos);
+
+        if (!live) db.ref(bus).off("value");
+    });
+}
+
+/* ---------------- DRIVER PAGE ---------------- */
+
+let gpsInterval;
+
+function startGPS() {
+    let bus = document.getElementById("busSelect").value;
+
+    gpsInterval = setInterval(() => {
+        navigator.geolocation.getCurrentPosition(pos => {
+            db.ref(bus).set({
+                lat: pos.coords.latitude,
+                lng: pos.coords.longitude
+            });
+        });
+    }, 1000);
+
+    alert("GPS ON for " + bus);
+}
+
+function stopGPS() {
+    clearInterval(gpsInterval);
+    alert("GPS OFF");
+}
+</script>
+
+<script src="https://maps.googleapis.com/maps/api/js?key=YOUR_MAPS_KEY&callback=initMap" async></script>
 
 </body>
 </html>
