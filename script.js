@@ -1,53 +1,41 @@
-document.addEventListener("DOMContentLoaded", function () {
+let map;
+let marker;
 
-    // Starting point
-    let lat = 16.8730;
-    let lng = 79.5715;
+function initMap() {
+  map = new google.maps.Map(document.getElementById("map"), {
+    zoom: 15,
+    center: { lat: 17.2000, lng: 79.6000 }
+  });
 
-    // Map setup
-    const map = L.map('map').setView([lat, lng], 14);
+  marker = new google.maps.Marker({
+    position: { lat: 17.2000, lng: 79.6000 },
+    map: map,
+    title: "Bus Location"
+  });
 
-    // Tile layer (premium HOT theme)
-    L.tileLayer('https://{s}.tile.openstreetmap.fr/hot/{z}/{x}/{y}.png', {
-        maxZoom: 19
-    }).addTo(map);
+  // Call function every 2 seconds
+  setInterval(updateBusLocation, 2000);
+}
 
-    // Bus icon
-    const busIcon = L.divIcon({
-        html: "🚌",
-        className: "bus-icon",
-        iconSize: [40, 40],
-        iconAnchor: [20, 20]
-    });
+function updateBusLocation() {
+  // You must update these values from API or database
+  let newLat = window.currentLat;
+  let newLng = window.currentLng;
 
-    // Marker
-    let marker = L.marker([lat, lng], { icon: busIcon }).addTo(map);
+  // Update only if changed
+  if (marker.position.lat() !== newLat || marker.position.lng() !== newLng) {
+    marker.setPosition({ lat: newLat, lng: newLng });
+    map.setCenter({ lat: newLat, lng: newLng });
+  }
+}
 
-    // Smooth movement function
-    function moveBus() {
-        let newLat = lat + (Math.random() - 0.5) * 0.003;
-        let newLng = lng + (Math.random() - 0.5) * 0.003;
+// TEMP movement simulation (remove when connecting real GPS)
+window.currentLat = 17.2000;
+window.currentLng = 79.6000;
 
-        let steps = 60;
-        let stepLat = (newLat - lat) / steps;
-        let stepLng = (newLng - lng) / steps;
-        let count = 0;
+setInterval(() => {
+  window.currentLat += 0.0005;
+  window.currentLng += 0.0005;
+}, 2000);
 
-        let interval = setInterval(() => {
-            lat += stepLat;
-            lng += stepLng;
-            marker.setLatLng([lat, lng]);
-
-            if (count === 0) {
-                map.panTo([lat, lng], { animate: true, duration: 1 });
-            }
-
-            count++;
-            if (count >= steps) clearInterval(interval);
-        }, 30);
-    }
-
-    // Move every 3 sec
-    setInterval(moveBus, 3000);
-
-});
+window.onload = initMap;
