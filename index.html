@@ -1,131 +1,198 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <meta charset="UTF-8">
-  <title>Bus Live Tracking</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Premium Bus Tracking</title>
 
-  <!-- Leaflet Map CSS -->
-  <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css">
+    <style>
+        body {
+            margin: 0;
+            font-family: Poppins, sans-serif;
+            background: #0e0e0e;
+            color: white;
+        }
 
-  <style>
-    body { margin:0; font-family:Arial; background:#f2f2f2; }
-    header { background:#007bff; color:#fff; padding:15px; text-align:center; font-size:22px; }
-    #map { height: 70vh; width:100%; margin-top:10px; }
-    .box { padding:10px; text-align:center; }
-    input {
-      padding:10px; width:70%; border-radius:6px; border:1px solid #aaa; margin-bottom:10px;
-    }
-    button {
-      padding:10px 20px; background:#007bff; border:none; color:white;
-      border-radius:6px; font-size:16px; cursor:pointer;
-    }
-  </style>
+        /* Top Menu */
+        #menu {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            padding: 15px;
+            background: rgba(255,255,255,0.06);
+            backdrop-filter: blur(12px);
+        }
+
+        #menu button {
+            padding: 10px 20px;
+            border: none;
+            background: #1e90ff;
+            color: white;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+
+        #menu button:hover {
+            transform: scale(1.05);
+        }
+
+        /* Containers */
+        #driverSection, #studentSection {
+            display: none;
+            text-align: center;
+            padding: 20px;
+        }
+
+        input {
+            width: 70%;
+            padding: 15px;
+            border-radius: 12px;
+            border: none;
+            margin-top: 15px;
+            font-size: 18px;
+            background: rgba(255,255,255,0.1);
+            color: white;
+        }
+
+        button.startBtn {
+            margin-top: 20px;
+            padding: 15px 30px;
+            border: none;
+            border-radius: 12px;
+            background: #00c8ff;
+            color: black;
+            font-size: 20px;
+            cursor: pointer;
+        }
+
+        #map {
+            width: 100%;
+            height: calc(100vh - 120px);
+            display: none;
+        }
+    </style>
 </head>
+
 <body>
 
-<header>🚍 Bus Live Tracking</header>
+    <!-- Top Menu -->
+    <div id="menu">
+        <button onclick="openStudent()">Student</button>
+        <button onclick="openDriver()">Driver</button>
+    </div>
 
-<div class="box">
-  <h3>Driver Code / Student Code</h3>
-  <input id="codeBox" placeholder="Enter Code (Example: 5999)">
-  <br>
-  <button onclick="submitCode()">Submit Code</button>
-</div>
+    <!-- STUDENT VIEW -->
+    <div id="studentSection">
+        <h2>🚌 Live Bus Tracking</h2>
+        <div id="map"></div>
+    </div>
 
-<div id="map"></div>
+    <!-- DRIVER VIEW -->
+    <div id="driverSection">
+        <h2>Driver Panel</h2>
+        <p>Enter your Bus Code to start sharing location</p>
 
-<!-- Leaflet JS -->
-<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+        <input id="busCode" placeholder="Enter bus code (ex: 599)">
+        <br>
+        <button class="startBtn" onclick="startSharing()">Start Sharing</button>
+    </div>
 
-<script>
-/* ---------------- MAP SETUP ---------------- */
-const map = L.map("map").setView([17.2807,79.4851], 14); // default city
+    <!-- FIREBASE + LOGIC -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getDatabase, ref, set, onValue } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
 
-L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-  maxZoom:19
-}).addTo(map);
+        const firebaseConfig = {
+            apiKey: "AIzaSyD-DUMMY-KEY",
+            authDomain: "bus-tracking-pro.firebaseapp.com",
+            databaseURL: "https://bus-tracking-pro-default-rtdb.firebaseio.com",
+            projectId: "bus-tracking-pro",
+            storageBucket: "bus-tracking-pro.appspot.com",
+            messagingSenderId: "191919191919",
+            appId: "1:191919191919:web:2919291929ee"
+        };
 
-/* ---------------- GLOBALS ---------------- */
-let driverMode = false;
-let matches = false;
-let DRIVER_CODE = "5999";  // you can change later
-let driverMarker = null;
-let studentMarker = null;
+        const app = initializeApp(firebaseConfig);
+        const db = getDatabase(app);
 
-/* ---------------- ASK FOR LOCATION ---------------- */
-function askUserLocation() {
-  navigator.geolocation.getCurrentPosition(pos=>{
-    const lat = pos.coords.latitude;
-    const lng = pos.coords.longitude;
+        let map;
+        let markers = {};
 
-    if (driverMode) {
-      updateDriverLocation(lat, lng);
-    } else {
-      if (studentMarker) studentMarker.remove();
-      studentMarker = L.marker([lat,lng]).addTo(map).bindPopup("You");
-      map.setView([lat,lng], 16);
-    }
+        /* STUDENT MAP */
+        function initMap() {
+            map = new google.maps.Map(document.getElementById("map"), {
+                zoom: 14,
+                center: { lat: 17.123, lng: 79.123 }
+            });
 
-  }, err=>{
-    alert("Please allow location access!");
-  });
-}
+            const busesRef = ref(db, "buses");
 
-/* ---------------- SUBMIT CODE LOGIC ---------------- */
-function submitCode(){
-  const code = document.getElementById("codeBox").value;
+            onValue(busesRef, (snapshot) => {
+                const buses = snapshot.val();
+                if (!buses) return;
 
-  if (code === DRIVER_CODE) {
-    driverMode = true;
-    matches = true;
-    alert("Driver Mode Activated.\nYour location will be shared.");
-    askUserLocation();
-    setInterval(askUserLocation, 5000);  // update every 5 sec
-  }
-  else {
-    driverMode = false;
-    if (code === DRIVER_CODE) {
-      matches = true;
-      alert("Student Mode Activated.\nDriver location will be shown.");
-      simulateDriverMovement();  // TEMP until Firebase added
-    } else {
-      alert("Invalid Code!");
-    }
-  }
-}
+                Object.keys(buses).forEach(busId => {
+                    const data = buses[busId];
 
-/* ---------------- TEMP DRIVER SIMULATION ---------------- */
-/* until Firebase config arrives */
-function simulateDriverMovement(){
-  if (!matches) return;
+                    if (!markers[busId]) {
+                        markers[busId] = new google.maps.Marker({
+                            position: { lat: data.lat, lng: data.lng },
+                            map: map,
+                            label: busId
+                        });
+                    } else {
+                        markers[busId].setPosition({ lat: data.lat, lng: data.lng });
+                    }
+                });
+            });
+        }
 
-  let lat = 17.2807;
-  let lng = 79.4851;
+        window.initMap = initMap;
 
-  driverMarker = L.marker([lat,lng]).addTo(map);
+        /* DRIVER SHARE */
+        window.startSharing = function () {
+            const code = document.getElementById("busCode").value;
 
-  setInterval(()=>{
-    lat += (Math.random()-0.5)*0.001;
-    lng += (Math.random()-0.5)*0.001;
-    driverMarker.setLatLng([lat,lng]);
-  }, 3000);
-}
+            const busCodes = {
+                "599": "Bus1",
+                "888": "Bus2",
+                "777": "Bus3"
+            };
 
-/* ---------------- DRIVER GPS UPLOAD (Firebase later) ---------------- */
-function updateDriverLocation(lat,lng){
-  if (!driverMarker) {
-    driverMarker = L.marker([lat,lng]).addTo(map).bindPopup("Driver");
-  } else {
-    driverMarker.setLatLng([lat,lng]);
-  }
-  map.setView([lat,lng],16);
+            if (!busCodes[code]) {
+                alert("Invalid Code!");
+                return;
+            }
 
-  // Firebase update will be here:
-  // firebase.database().ref("bus/5999").set({lat:lat, lng:lng});
-}
+            const busId = busCodes[code];
 
-</script>
+            navigator.geolocation.watchPosition(pos => {
+                set(ref(db, "buses/" + busId), {
+                    lat: pos.coords.latitude,
+                    lng: pos.coords.longitude
+                });
+            });
+
+            alert("Sharing location for " + busId);
+        };
+    </script>
+
+    <!-- GOOGLE MAPS -->
+    <script async src="https://maps.googleapis.com/maps/api/js?key=YOUR_MAP_KEY&callback=initMap"></script>
+
+    <!-- MENU LOGIC -->
+    <script>
+        function openStudent() {
+            document.getElementById("studentSection").style.display = "block";
+            document.getElementById("driverSection").style.display = "none";
+            document.getElementById("map").style.display = "block";
+        }
+
+        function openDriver() {
+            document.getElementById("studentSection").style.display = "none";
+            document.getElementById("driverSection").style.display = "block";
+            document.getElementById("map").style.display = "none";
+        }
+    </script>
 
 </body>
 </html>
