@@ -1,66 +1,73 @@
+/* BACKGROUND */
 body {
-  margin: 0;
-  font-family: Arial;
+    margin: 0;
+    font-family: Poppins, sans-serif;
+    background: linear-gradient(135deg, #0a0a0a, #1a1a1a);
+    color: white;
 }
 
-#topBar {
-  background: #111;
-  color: white;
-  padding: 12px;
-  text-align: center;
-  font-size: 22px;
+/* TOP MENU */
+#menu {
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+    padding: 18px;
+    background: rgba(255,255,255,0.07);
+    backdrop-filter: blur(10px);
 }
 
-#busOptions {
-  display: flex;
-  gap: 10px;
-  justify-content: center;
-  padding: 10px;
-  background: white;
+#menu button {
+    padding: 12px 22px;
+    border: none;
+    background: #008cff;
+    color: white;
+    font-size: 18px;
+    border-radius: 10px;
+    cursor: pointer;
 }
 
-#busOptions button {
-  padding: 10px 25px;
-  font-size: 18px;
-  border-radius: 8px;
-  border: 1px solid #333;
-  background: #eee;
+#menu button:hover {
+    transform: scale(1.07);
 }
 
-#map {
-  width: 100%;
-  height: calc(100vh - 100px);
+/* STUDENT + DRIVER SECTIONS */
+#studentSection, #driverSection {
+    display: none;
+    padding: 20px;
+    text-align: center;
 }
 
-#codePopup {
-  position: fixed;
-  top: 0; left: 0; right: 0; bottom: 0;
-  background: rgba(0,0,0,0.6);
-  display: none;
-  justify-content: center;
-  align-items: center;
-}
-
-#popupBox {
-  background: white;
-  padding: 20px;
-  border-radius: 10px;
-  width: 260px;
-  text-align: center;
-}
-
+/* INPUT */
 input {
-  width: 100%;
-  padding: 12px;
-  font-size: 20px;
-  margin-bottom: 10px;
-  text-align: center;
-  border: 2px solid #333;
+    width: 70%;
+    padding: 15px;
+    margin-top: 20px;
+    border-radius: 12px;
+    border: none;
+    font-size: 18px;
+    background: rgba(255,255,255,0.14);
+    color: white;
+    outline: none;
 }
 
-button {
-  margin-top: 5px;
-  padding: 10px;
-  width: 100%;
-  font-size: 18px;
+/* BUTTON BIG */
+.startBtn {
+    margin-top: 25px;
+    padding: 15px 35px;
+    font-size: 20px;
+    background: #00c8ff;
+    border: none;
+    border-radius: 12px;
+    cursor: pointer;
+}
+
+.startBtn:hover {
+    transform: scale(1.07);
+}
+
+/* MAP */
+#map {
+    width: 100%;
+    height: calc(100vh - 120px);
+    display: none;
 }
